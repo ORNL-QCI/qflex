@@ -162,12 +162,22 @@ ContractionData ContractionData::Initialize(
   // significantly from this value.
   if (global::verbose > 0) {
     std::size_t old_precision = std::cerr.precision(6);
-    std::cerr << "Allocating " << utils::readable_memory_string(alloc_size)
-              << " for this simulation." << std::endl;
+    std::cerr << WARN_MSG("Allocating ",
+                          utils::readable_memory_string(alloc_size),
+                          " for this simulation.")
+              << std::endl;
     std::cerr.precision(old_precision);
   }
 
-  // Actually allocate the required space.
+  // Reserve space for all the tensors
+  {
+    std::size_t num_tensors = 0;
+    num_tensors += 1;
+    num_tensors += std::size(unique_sizes);
+    num_tensors += std::size(data.patch_max_size_);
+    num_tensors += std::size(cut_copy_size);
+    data.scratch_.reserve(num_tensors);
+  }
 
   // General-purpose scratch space (primarily used for tensor reordering).
   try {
@@ -706,7 +716,7 @@ void multiply_with_talsh(Tensor& A, Tensor& B, Tensor& C) {
   // contracts properly, since it follows FORTRAN convention.
   std::string contraction_string = "D(";
   std::string index;
-  
+
   contraction_string += comma_concatenate_reversed(C.get_indices(),
                                                    index_letter);
   contraction_string += ")+=L(";
@@ -717,8 +727,6 @@ void multiply_with_talsh(Tensor& A, Tensor& B, Tensor& C) {
                                                    index_letter);
   contraction_string += ")";
 
-  bool done;
-  int errc;
   std::vector<int> signature_D;
   for (int i = C.get_dimensions().size() - 1; i >= 0; --i) {
     size_t dim = C.get_dimensions()[i];
@@ -737,9 +745,11 @@ void multiply_with_talsh(Tensor& A, Tensor& B, Tensor& C) {
     signature_R.push_back(dim);
   }
   talsh::Tensor R(signature_R, B.data());
-  errc = D.contractAccumulate(nullptr, contraction_string, L, R, DEV_HOST,
-                              0, s_type(1.0), false);
-  done = D.sync();
+  auto errc = D.contractAccumulate(nullptr, contraction_string, L, R, DEV_HOST,
+                                   0, s_type(1.0), false);
+  assert(errc == TALSH_SUCCESS);
+  auto done = D.sync();
+  assert(done);
 }
 // NEW UP TO HERE
 

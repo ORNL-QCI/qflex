@@ -1,0 +1,1 @@
+autoreconf -i && autoconf && CXXFLAGS="-I/home/div/src/TAL_SH" LIBS="-L/home/div/src/TAL_SH -ltalsh -lgfortran -L/usr/local/cuda/lib64 -lcublas -lcudart -lnvToolsExt -L/usr/lib/x86_64-linux-gnu -lopenblas -lgomp" ./configure --prefix=/home/div/.qflex
