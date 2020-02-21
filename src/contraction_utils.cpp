@@ -646,14 +646,18 @@ void ContractGrid(const std::list<ContractionOperation>& ordering,
   }
   try {
     // NEW
-    std::size_t init_space(10000000000);
+    int num_gpus = talsh::getDeviceCount(DEV_NVIDIA_GPU);
+    std::size_t init_space = 10000000000;
     talsh::initialize(&init_space);
-    std::cout << "Initialized TALSH.\n";
+    std::cout << "Initialized TALSH with " << num_gpus << " NVIDIA GPUs\n";
+    talsh::startTensorOpLog(); //debug
     // NEW UP TO HERE
     data.ContractGrid(ordering, /*output_index = */ 0, active_patches);
     // NEW
+    talsh::finishTensorOpLog(); //debug
+    talshStats(); //debug
     talsh::shutdown();
-    std::cout << "Shut down TALSH.\n";
+    std::cout << "Shut down TALSH\n";
     // NEW UP TO HERE
   } catch (const std::string& err_msg) {
     throw ERROR_MSG("Failed to call ContractGrid(). Error:\n\t[", err_msg, "]");
@@ -679,9 +683,9 @@ std::string comma_concatenate_reversed(
 void multiply_with_talsh(Tensor& A, Tensor& B, Tensor& C) {
   // Remove this and call _ALPHABET from tensor.cpp
   const std::vector<std::string> _ALPHABET(
-      {"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", 
-       "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", 
-       "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", 
+      {"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m",
+       "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",
+       "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
        "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"});
   if (A.data() == C.data()) {
     throw ERROR_MSG("A and C cannot be the same tensor: ",
@@ -745,8 +749,8 @@ void multiply_with_talsh(Tensor& A, Tensor& B, Tensor& C) {
     signature_R.push_back(dim);
   }
   talsh::Tensor R(signature_R, B.data());
-  auto errc = D.contractAccumulate(nullptr, contraction_string, L, R, DEV_HOST,
-                                   0, s_type(1.0), false);
+  auto errc = D.contractAccumulate(nullptr, contraction_string, L, R,
+                                   DEV_NVIDIA_GPU, 0, s_type(1.0), false);
   assert(errc == TALSH_SUCCESS);
   auto done = D.sync();
   assert(done);
