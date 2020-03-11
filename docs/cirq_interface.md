@@ -6,7 +6,7 @@ HOWTO use qFlex from Google [Cirq](https://github.com/quantumlib/cirq).
 The currently supported version of Cirq is 0.5.0, and newer stable
 versions will be supported, once they are available. Therefore, the
 prerequisites are:
-- Cirq 0.5.0
+- Cirq 0.6.0 or later
 - qFlex C++ code (the code from this repo)
 
 This file is an example of how to use the qFlex Python interface with Cirq.
@@ -20,7 +20,7 @@ should contain a shared library that is available as module to Python.
 
 2. Cirq can either be [installed on your machine](https://cirq.readthedocs.io/en/stable/install.html),
 or you can install Cirq in a virtual environment by calling
-`./scripts/construct_cirq_environment.sh`
+`./scripts/create_cirq_environment.sh`
 
 3. If the environment existed, make sure to `source .venv/bin/activate`
 * Note `deactivate` exits the environment
@@ -31,7 +31,7 @@ or you can install Cirq in a virtual environment by calling
 repository was cloned. For example, `/home/user/github/qflex`.
 
 5. Run the example about how to simulate a small and a large quantum circuit.
-`python python/qflex_cirq_example.py`
+`python qflexcirq/qflex_cirq_example.py`
 
 
 ## Interface design and operations
@@ -179,7 +179,7 @@ A simulator and a device are necessary:
 
 * The Device is a virtual device which ensures that circuit gates are decomposed
 into qFlex-supported gate types. For the moment this is a restricted gate set;
-for a full listing of valid gates see [QflexVirtualDevice](/python/cirq_interface/qflex_virtual_device.py).
+for a full listing of valid gates see [QflexVirtualDevice](/qflexcirq/interface/qflex_virtual_device.py).
 
 * The Simulator calls the Python pybind11-based interface and checks that the
 circuit to simulate was compiled (validated) against the device.

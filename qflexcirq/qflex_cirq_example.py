@@ -2,15 +2,37 @@
 import sys, os
 sys.path.insert(
     1, os.path.realpath(os.path.dirname(os.path.realpath(__file__)) + '/../'))
-import python.cirq_interface.qflex_simulator as qsim
-import python.cirq_interface.qflex_virtual_device as qdevice
-import python.cirq_interface.qflex_grid as qgrid
-import python.cirq_interface.qflex_circuit as qcirc
-import python.cirq_interface.qflex_order as qorder
+import qflexcirq.interface.qflex_simulator as qsim
+import qflexcirq.interface.qflex_virtual_device as qdevice
+import qflexcirq.interface.qflex_grid as qgrid
+import qflexcirq.interface.qflex_circuit as qcirc
+import qflexcirq.interface.qflex_order as qorder
 
-import python.utils as qflexutils
+import qflexcirq.utils as qflexutils
 
-from python import qflex
+from qflexcirq import qflex
+"""
+Example HOWTO
+
+Running the example requires a compiled version of QFlex.
+
+Two possibilities are available:
+1. compilation from a clone of the github repository
+2. pip installing the qflexcirq package
+
+
+In the examples below different simulation configurations are illustrated. 
+A configuration includes three types of information: grid, order of tensor 
+contractions, quantum circuit. For example, config_small or config_large use 
+different grid  arrangements, different circuits and different input states. 
+
+When using the pip install version of qflexcirq, the 
+   !!! config files are not copied onto the  local machine !!!
+
+Config files have to be explicitly downloaded from the
+github repository. Correspondingly, the paths in the configurations below need
+to be adapted to where the config files are stored.
+"""
 
 config_small = {
     'circuit_filename': 'config/circuits/rectangular_2x2_1-2-1_0.txt',

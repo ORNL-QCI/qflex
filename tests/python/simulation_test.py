@@ -12,17 +12,14 @@ import sys, os
 sys.path.insert(
     1,
     os.path.realpath(os.path.dirname(os.path.realpath(__file__)) + '/../../'))
-from python.ordering import order_circuit_simulation as auto_order
-from python import utils
-from python import qflex
+from qflexcirq.ordering import order_circuit_simulation as auto_order
 
-import python.cirq_interface.qflex_simulator as qsim
-import python.cirq_interface.qflex_virtual_device as qdevice
-import python.cirq_interface.qflex_grid as qgrid
-import python.cirq_interface.qflex_circuit as qcirc
-import python.cirq_interface.qflex_order as qorder
+from qflexcirq import utils
+from qflexcirq import qflex
 
-import python.utils as qflexutils
+import qflexcirq.utils as qflexutils
+
+import qflexcirq as qflexcirq
 
 num_runs = 20
 
@@ -385,6 +382,25 @@ results = cirq.Simulator().simulate(circuit)
 results_no_h_and_sparse = cirq.Simulator().simulate(circuit_no_h_and_sparse)
 
 
+@pytest.mark.parametrize('m', ['1kB', '10B', '1', 1 << 10, 10, 1, '1kMB'])
+@pytest.mark.xfail
+def test_memory_limit(m):
+
+    # Get configuration as a string
+    final_conf = '0' * len(qubits)
+
+    options = {
+        'circuit': circuit_test.split('\n'),
+        'ordering': ordering_test.split('\n'),
+        'grid': grid_test.split('\n'),
+        'final_state': final_conf,
+        'memory_limit': m
+    }
+
+    # Get output from qFlex
+    qflex_amplitude = qflex.simulate(options)[0][1]
+
+
 @pytest.mark.parametrize(
     'x', [np.random.randint(0, 2**len(qubits)) for _ in range(num_runs)])
 def test_simulation(x):
@@ -542,15 +558,17 @@ with open(grid_2x2_filename[1], 'w') as f:
 with open(ordering_2x2_filename[1], 'w') as f:
     print(ordering_2x2_test, file=f)
 
-qdev = qdevice.QFlexVirtualDevice(
-    qflex_grid=qgrid.QFlexGrid.from_existing_file(grid_2x2_filename[1]))
+qdev = qflexcirq.QFlexVirtualDevice(
+    qflex_grid=qflexcirq.QFlexGrid.from_existing_file(grid_2x2_filename[1]))
 
 qqubits = qdev.get_grid_qubits_as_keys()
 
-qord = qorder.QFlexOrder.from_existing_file(ordering_2x2_filename[1])
+qord = qflexcirq.QFlexOrder.from_existing_file(ordering_2x2_filename[1])
 mycirc = qflexutils.GetCircuitOfMoments(circuit_fsim_filename[1],
                                         qdev.get_indexed_grid_qubits())
-qcir = qcirc.QFlexCircuit(cirq_circuit=mycirc, device=qdev, qflex_order=qord)
+qcir = qflexcirq.QFlexCircuit(cirq_circuit=mycirc,
+                              device=qdev,
+                              qflex_order=qord)
 
 results_fsim = cirq.Simulator().simulate(mycirc)
 
@@ -577,7 +595,7 @@ def test_simulation_with_fsim_gates(x):
     qflex_amplitude1 = qflex.simulate(options)[0][1]
 
     # Cirq: Get output from qFlex
-    sim = qsim.QFlexSimulator()
+    sim = qflexcirq.QFlexSimulator()
     qflex_amplitude2 = sim.compute_amplitudes(qcir, bitstrings=[final_conf])
 
     # Compare the amplitudes
