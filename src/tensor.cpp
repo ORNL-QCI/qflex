@@ -948,6 +948,10 @@ std::string Tensor::tensor_to_string() const {
   return output_str;
 }
 
+const std::size_t Tensor::get_hash() const {
+  return reinterpret_cast<std::size_t>(_data);
+}
+
 void Tensor::print_data() const {
   for (std::size_t p = 0; p < size(); ++p) std::cout << *(_data + p) << " ";
   std::cout << std::endl;

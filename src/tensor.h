@@ -243,6 +243,11 @@ class Tensor {
   std::string tensor_to_string() const;
 
   /**
+   * Returns the unique integer hash for the tensor.
+   */
+  const std::size_t get_hash() const;
+
+  /**
    * Prints the data of the Tensor.
    */
   void print_data() const;
